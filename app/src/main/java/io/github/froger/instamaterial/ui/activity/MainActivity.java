@@ -14,19 +14,27 @@ import android.view.Menu;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 
+import com.wilddog.client.DataSnapshot;
+import com.wilddog.client.ValueEventListener;
+import com.wilddog.client.Wilddog;
+import com.wilddog.client.WilddogError;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.InjectView;
 import butterknife.OnClick;
-import io.github.froger.instamaterial.ui.adapter.FeedAdapter;
 import io.github.froger.instamaterial.R;
 import io.github.froger.instamaterial.Utils;
+import io.github.froger.instamaterial.ui.adapter.FeedAdapter;
 import io.github.froger.instamaterial.ui.view.FeedContextMenu;
 import io.github.froger.instamaterial.ui.view.FeedContextMenuManager;
-
 
 public class MainActivity extends BaseDrawerActivity implements FeedAdapter.OnFeedItemClickListener,
         FeedContextMenu.OnFeedContextMenuItemClickListener {
     public static final String ACTION_SHOW_LOADING_ITEM = "action_show_loading_item";
-
+    public static final String WILDDOG_DATA_URL = "https://wilddog-vcii-3621.wilddogio.com/data";
     private static final int ANIM_DURATION_TOOLBAR = 300;
     private static final int ANIM_DURATION_FAB = 400;
 
@@ -36,17 +44,37 @@ public class MainActivity extends BaseDrawerActivity implements FeedAdapter.OnFe
     FloatingActionButton fabCreate;
     @InjectView(R.id.content)
     CoordinatorLayout clContent;
-
     private FeedAdapter feedAdapter;
-
     private boolean pendingIntroAnimation;
+
+    public List<Map<String, Object>> feedList;
+    public static List<Map<String, Object>> feedListData;
+
+    public static int listNumber = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setupFeed();
 
+        Wilddog.setAndroidContext(this);
+        Wilddog ref = new Wilddog(WILDDOG_DATA_URL);
+        feedList = new ArrayList<Map<String, Object>>();
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                feedList = (List) dataSnapshot.getValue();
+                listNumber = feedList.size();
+                feedListData = feedList;
+
+            }
+
+            @Override
+            public void onCancelled(WilddogError wilddogError) {
+            }
+        });
+
+        setupFeed();
         if (savedInstanceState == null) {
             pendingIntroAnimation = true;
         } else {
@@ -196,5 +224,9 @@ public class MainActivity extends BaseDrawerActivity implements FeedAdapter.OnFe
 
     public void showLikedSnackbar() {
         Snackbar.make(clContent, "Liked!", Snackbar.LENGTH_SHORT).show();
+    }
+
+    public List<Map<String,Object>> getFeedList() {
+        return feedList;
     }
 }

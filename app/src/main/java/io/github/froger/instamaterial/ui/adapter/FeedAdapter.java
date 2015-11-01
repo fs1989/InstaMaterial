@@ -19,6 +19,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextSwitcher;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,16 +46,13 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     private static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(4);
 
     private static final int ANIMATED_ITEMS_COUNT = 2;
-
+    private final Map<Integer, Integer> likesCount = new HashMap<>();
+    private final Map<RecyclerView.ViewHolder, AnimatorSet> likeAnimations = new HashMap<>();
+    private final ArrayList<Integer> likedPositions = new ArrayList<>();
     private Context context;
     private int lastAnimatedPosition = -1;
     private int itemsCount = 0;
     private boolean animateItems = false;
-
-    private final Map<Integer, Integer> likesCount = new HashMap<>();
-    private final Map<RecyclerView.ViewHolder, AnimatorSet> likeAnimations = new HashMap<>();
-    private final ArrayList<Integer> likedPositions = new ArrayList<>();
-
     private OnFeedItemClickListener onFeedItemClickListener;
 
     private boolean showLoadingView = false;
@@ -120,13 +120,24 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     }
 
     private void bindDefaultFeedItem(int position, CellFeedViewHolder holder) {
-        if (position % 2 == 0) {
-            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_1);
-            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_1);
-        } else {
-            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_2);
-            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_2);
-        }
+        System.out.println(position);
+
+        String imageUrl = MainActivity.feedListData.get(position).get("picbig").toString();
+        String userUrl = MainActivity.feedListData.get(position).get("userpic").toString();
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
+                .build();
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        imageLoader.init(config);
+        imageLoader.displayImage(imageUrl, holder.ivFeedCenter);
+        imageLoader.displayImage(userUrl, holder.ivUserProfile);
+
+// if (position % 2 == 0) {
+//            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_1);
+//            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_1);
+//        } else {
+//            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_2);
+//            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_2);
+//        }
         updateLikesCounter(holder, false);
         updateHeartButton(holder, false);
 
@@ -183,7 +194,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     @Override
     public int getItemCount() {
-        return itemsCount;
+        return MainActivity.listNumber;
     }
 
     private void updateLikesCounter(CellFeedViewHolder holder, boolean animated) {
@@ -365,6 +376,14 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         notifyItemChanged(0);
     }
 
+    public interface OnFeedItemClickListener {
+        public void onCommentsClick(View v, int position);
+
+        public void onMoreClick(View v, int position);
+
+        public void onProfileClick(View v);
+    }
+
     public static class CellFeedViewHolder extends RecyclerView.ViewHolder {
         @InjectView(R.id.ivFeedCenter)
         ImageView ivFeedCenter;
@@ -395,13 +414,5 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             ButterKnife.inject(this, view);
         }
 
-    }
-
-    public interface OnFeedItemClickListener {
-        public void onCommentsClick(View v, int position);
-
-        public void onMoreClick(View v, int position);
-
-        public void onProfileClick(View v);
     }
 }
