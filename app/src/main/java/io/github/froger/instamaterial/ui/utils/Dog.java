@@ -24,46 +24,28 @@ import io.github.froger.instamaterial.ui.activity.MainActivity;
  */
 public class Dog {
 
-    public static Wilddog ref;
-    public static final String WILDDOG_URL = "https://wilddog-vcii-3621.wilddogio.com";
-    static CoordinatorLayout clContent;
-    public static Object result;
+    public static final String WILDDOG_DATA_URL = "https://wilddog-vcii-3621.wilddogio.com/data";
+    public List<Map<String, Object>> feedList;
+    public int listNumber = 1;
 
-    public Dog() {
-        ref = new Wilddog(WILDDOG_URL);
-    }
-
-    public static void write(String node, Map map) {
-        Wilddog postRef = ref.child(node);
-        postRef.push().setValue(map, new Wilddog.CompletionListener() {
+    private void initData() {
+        Wilddog ref = new Wilddog(WILDDOG_DATA_URL);
+        feedList = new ArrayList<Map<String, Object>>();
+        ref.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onComplete(WilddogError wilddogError, Wilddog wilddog) {
-                if (wilddogError != null) {
-                    Snackbar.make(clContent, "Data could not be saved. " + wilddogError.getMessage(), Snackbar.LENGTH_SHORT).show();
-                } else {
-                    Snackbar.make(clContent, "Data saved successfully.", Snackbar.LENGTH_SHORT).show();
-                }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                feedList = new ArrayList();
+                feedList = (List) dataSnapshot.getValue();
+                listNumber = feedList.size();
+                System.out.println(listNumber);
+                System.out.println(feedList);
+            }
+
+            @Override
+            public void onCancelled(WilddogError wilddogError) {
             }
         });
 
-    }
-
-    public static Object getData(String path) {
-
-        ref.child(path).addValueEventListener(new ValueEventListener() {
-
-            public void onDataChange(DataSnapshot snapshot) {
-                result =  snapshot.getValue();
-                System.out.println("Dog类里的onDataChange方法执行了: Result为 " + snapshot.getValue()); //打印结果 "hello world!!!"
-            }
-            public void onCancelled(WilddogError error) {
-                if (error != null) {
-                    System.out.println(error.getCode());
-                }
-            }
-
-        });
-        return result;
     }
 
 }

@@ -138,7 +138,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 //            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_2);
 //            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_2);
 //        }
-        updateLikesCounter(holder, false);
+//        updateLikesCounter(holder, false);
         updateHeartButton(holder, false);
 
         holder.btnComments.setTag(position);

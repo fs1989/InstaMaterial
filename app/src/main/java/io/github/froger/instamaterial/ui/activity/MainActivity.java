@@ -56,8 +56,20 @@ public class MainActivity extends BaseDrawerActivity implements FeedAdapter.OnFe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         Wilddog.setAndroidContext(this);
+
+        initData();
+
+
+        setupFeed();
+        if (savedInstanceState == null) {
+            pendingIntroAnimation = true;
+        } else {
+            feedAdapter.updateItems(false);
+        }
+    }
+
+    private void initData() {
         Wilddog ref = new Wilddog(WILDDOG_DATA_URL);
         feedList = new ArrayList<Map<String, Object>>();
         ref.addValueEventListener(new ValueEventListener() {
@@ -67,19 +79,15 @@ public class MainActivity extends BaseDrawerActivity implements FeedAdapter.OnFe
                 listNumber = feedList.size();
                 feedListData = feedList;
 
+                System.out.println(feedListData.size());
+                System.out.println(feedListData);
+
             }
 
             @Override
             public void onCancelled(WilddogError wilddogError) {
             }
         });
-
-        setupFeed();
-        if (savedInstanceState == null) {
-            pendingIntroAnimation = true;
-        } else {
-            feedAdapter.updateItems(false);
-        }
     }
 
     private void setupFeed() {
